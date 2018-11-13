@@ -86,45 +86,7 @@ COPY entry_point.sh \
 
 RUN chmod +x /root/entry_point.sh
 
-# ===============================================
-
-ENV REFRESHED_APT_AT 2016-02-20
-
-# Set locale to UTF-8 to fix the locale warnings
-RUN localedef -v -c -i en_US -f UTF-8 en_US.UTF-8 || :
-
-# Set DEBIAN_FRONTEND to noninteractive, so dpkg will not wait for user inputs
-ENV DEBIAN_FRONTEND noninteractive
-
-# Installing the environment required: xserver, xdm, flux box, roc-filer and ssh
-# and install some basic packages
-# and clean up apt-get
-
-RUN apt-get install -y lxde-core lxterminal xvfb x11vnc sudo && \
-	apt-get install -y xterm && \
-	apt-get clean
-
-# Fix problems with Upstart and DBus inside a docker container.
-RUN dpkg-divert --local --rename --add /sbin/initctl && ln -sf /bin/true /sbin/initctl
-
-# Copy the files into the container
-ADD . /x11-src
-RUN chmod -R a=rX /x11-src
-
-# Local user, may be overwritten by dependent build
-ENV X11_USER xclient
-
-# Resolution and color depth of simulated display
-ENV RESOLUTION 1280x1024x16
-
-VOLUME /home
-EXPOSE 5900
-
-# Start x11vnc
-ENTRYPOINT ["/bin/bash", "/x11-src/startup.sh"]
-CMD ["/usr/bin/lxterminal"]
-
 #==================
 # Run appium server
 #==================
-# ENTRYPOINT /root/entry_point.sh
+ENTRYPOINT [ "sh", "-c", "appium" ]
